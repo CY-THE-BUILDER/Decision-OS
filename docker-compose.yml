@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: infra/deploy/Dockerfile.api
+    working_dir: /app
+    env_file:
+      - .env.example
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: .
+      dockerfile: infra/deploy/Dockerfile.web
+    env_file:
+      - .env.example
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://api:8000/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api

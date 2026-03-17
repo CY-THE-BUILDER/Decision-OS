@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: decision-os-api
+    runtime: docker
+    dockerfilePath: ./infra/deploy/Dockerfile.api
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_VERSION
+        value: 0.1.0
+      - key: APP_BASE_URL
+        value: https://decision-os-web.onrender.com
+      - key: CORS_ORIGINS
+        value: https://decision-os-web.onrender.com
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+
+  - type: web
+    name: decision-os-web
+    runtime: docker
+    dockerfilePath: ./infra/deploy/Dockerfile.web
+    envVars:
+      - key: NEXT_PUBLIC_APP_BASE_URL
+        value: https://decision-os-web.onrender.com
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: https://decision-os-api.onrender.com/api
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false

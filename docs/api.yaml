@@ -1,0 +1,121 @@
+openapi: 3.0.3
+info:
+  title: Decision OS API
+  version: 0.1.0
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CaptureCreate:
+      type: object
+      required: [raw_text, source]
+      properties:
+        raw_text: { type: string }
+        source: { type: string, enum: [manual, voice, email, slack, other] }
+        metadata: { type: object, additionalProperties: true }
+    Capture:
+      allOf:
+        - $ref: '#/components/schemas/CaptureCreate'
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            created_at: { type: string, format: date-time }
+    Task:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        category: { type: string, enum: [work, life, finance, health, side_project, other] }
+        status: { type: string, enum: [new, in_progress, done, archived] }
+        due_date: { type: string, format: date, nullable: true }
+        effort_minutes: { type: integer }
+        priority: { type: integer, minimum: 0, maximum: 3 }
+        confidence: { type: number }
+        needs_review: { type: boolean }
+        notes: { type: string, nullable: true }
+    TaskPatch:
+      type: object
+      properties:
+        title: { type: string }
+        category: { type: string }
+        status: { type: string }
+        due_date: { type: string, format: date, nullable: true }
+        effort_minutes: { type: integer }
+        priority: { type: integer }
+        notes: { type: string, nullable: true }
+    DecisionItem:
+      type: object
+      properties:
+        rank: { type: integer }
+        task: { $ref: '#/components/schemas/Task' }
+        reason: { type: string, nullable: true }
+        risk_if_not_doing: { type: string, nullable: true }
+    Decision:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        decision_date: { type: string, format: date }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/DecisionItem' }
+paths:
+  /me:
+    get:
+      summary: Get current user info
+      responses:
+        '200': { description: OK }
+  /captures:
+    get:
+      summary: List captures
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create a capture
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CaptureCreate' }
+      responses:
+        '201': { description: Created }
+  /tasks:
+    get:
+      summary: List tasks
+      responses:
+        '200': { description: OK }
+  /tasks/{id}:
+    patch:
+      summary: Patch a task
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: OK }
+  /decisions:
+    get:
+      summary: Get decision by date
+      responses:
+        '200': { description: OK }
+  /decisions/generate:
+    post:
+      summary: Generate decision by date
+      responses:
+        '200': { description: OK }
+  /settings/notifications:
+    get:
+      summary: Get notification settings
+      responses:
+        '200': { description: OK }
+    patch:
+      summary: Update notification settings
+      responses:
+        '200': { description: OK }
